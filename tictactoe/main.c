@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #define NROWS 3
 #define NCOLS 3
@@ -13,7 +14,10 @@ char table[NROWS][NCOLS] = {
 };
 
 void printtable();
+void clearscreen();
+
 void turns(int n);
+
 int gamehaswinner();
 int winner(char winch);
 
@@ -25,16 +29,22 @@ int main()
 	int ntable = 0;
 	int winnum = 0;
 
-	printtable();
+	clearscreen();
 
 	do  {
+		printtable();
 		printf("[%c] It's your turn! N: ", (xplayer) ? 'X' : 'O');
 
 		scanf("%d", &ntable);
 
 		if (ntable < 0 || ntable >= 10) {
-			printf("\n");
-			printtable();
+			printf("Valid numbers: (1-9). Number [0] to exit.\n");
+
+			/* clear buffer and wait for player input */
+			while (getchar() != '\n');
+			getchar();
+
+			clearscreen();
 			continue; 
 		}
 
@@ -48,8 +58,8 @@ int main()
 			break;
 		}
 
-		printf("\n");
-		printtable();
+		printf("\n"); 
+		clearscreen();
 	} while (ntable != 0);
 
 	if (ntable == 0)
@@ -60,11 +70,21 @@ int main()
 	return 0;
 }
 
+void clearscreen()
+{
+#ifdef __unix__
+	system("clear");
+#endif
+#ifdef _WIN32
+	system("cls");
+#endif
+}
+
 int winner(char winch)
 {
-	printf("\n");
+	clearscreen();
 	printtable();
-	printf("\nPlayer %c WINS!\n", winch);
+	printf("Player %c WINS!\n", winch);
 	return 1;
 }
 
@@ -74,9 +94,7 @@ int gamehaswinner()
 
 	checkch = (checkch == 'X') ? 'O' : 'X';
 
-	if (nfree < 1) {
-		return -1;
-	}
+	/* check horizontally, vertically and diagonally */
 
 	for (int i = 0; i < NROWS; i++) {
 		if (table[i][0] == checkch) 
@@ -101,6 +119,12 @@ int gamehaswinner()
 			if (table[2][0] == checkch)
 				return winner(checkch);
 
+	/* no valid squares left? that's a tie */
+
+	if (nfree < 1) {
+		return -1;
+	}
+
 	return 0;
 }
 
@@ -116,6 +140,9 @@ void turns(int n)
 	}
 	else {
 		printf("Square %d is already taken!\n", n);
+		/* clear buffer and wait for player input */
+		while (getchar() != '\n');
+		getchar();
 	}
 
 }
