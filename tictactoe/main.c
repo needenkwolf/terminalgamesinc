@@ -58,7 +58,6 @@ int main()
 			break;
 		}
 
-		printf("\n"); 
 		clearscreen();
 	} while (ntable != 0);
 
