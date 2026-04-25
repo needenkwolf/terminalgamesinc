@@ -13,12 +13,15 @@ char table[NROWS][NCOLS] = {
 	{'7', '8', '9'}
 };
 
+enum {TIE = -1, PLAYING, WINNER};
+
 void printtable();
 void clearscreen();
+void waitinput();
 
 void turns(int n);
 
-int gamehaswinner();
+int gamestatus();
 int winner(char winch);
 
 int xplayer = 1;
@@ -26,8 +29,7 @@ int nfree = 9;
 
 int main()
 {
-	int ntable = 0;
-	int winnum = 0;
+	int ntable = -1;
 
 	clearscreen();
 
@@ -35,14 +37,11 @@ int main()
 		printtable();
 		printf("[%c] It's your turn! N: ", (xplayer) ? 'X' : 'O');
 
-		scanf("%d", &ntable);
-
-		if (ntable < 0 || ntable >= 10) {
+		if ((scanf("%d", &ntable)) < 1 ||
+				(ntable < 0 || ntable >= 10)) {
 			printf("Valid numbers: (1-9). Number [0] to exit.\n");
 
-			/* clear buffer and wait for player input */
-			while (getchar() != '\n');
-			getchar();
+			waitinput();
 
 			clearscreen();
 			continue; 
@@ -50,23 +49,28 @@ int main()
 
 		turns(ntable);
 
-		if ((winnum = gamehaswinner()) > 0) {
-			break;
-		}
-		else if (winnum < 0) {
-			printf("\nIt's a tie! Ending game...\n");
+		if (gamestatus() != PLAYING) {
+			waitinput();
 			break;
 		}
 
 		clearscreen();
 	} while (ntable != 0);
 
-	if (ntable == 0)
+	if (ntable == 0) {
 		printf("Closing game...\n");
+	}
 
 	printf("\n");
 	
 	return 0;
+}
+
+void waitinput()
+{
+	/* clear buffer and wait for player input */
+	while (getchar() != '\n');
+	getchar();
 }
 
 void clearscreen()
@@ -84,10 +88,10 @@ int winner(char winch)
 	clearscreen();
 	printtable();
 	printf("Player %c WINS!\n", winch);
-	return 1;
+	return WINNER;
 }
 
-int gamehaswinner()
+int gamestatus()
 {
 	int static checkch;
 
@@ -121,10 +125,11 @@ int gamehaswinner()
 	/* no valid squares left? that's a tie */
 
 	if (nfree < 1) {
-		return -1;
+		printf("\nIt's a tie! Ending game...\n");
+		return TIE;
 	}
 
-	return 0;
+	return PLAYING;
 }
 
 void turns(int n)
@@ -139,9 +144,7 @@ void turns(int n)
 	}
 	else {
 		printf("Square %d is already taken!\n", n);
-		/* clear buffer and wait for player input */
-		while (getchar() != '\n');
-		getchar();
+		waitinput();
 	}
 
 }
